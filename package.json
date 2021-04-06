@@ -1,0 +1,24 @@
+{
+  "name": "PhaserGames",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itzcookiie/PhaserGames.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/itzcookiie/PhaserGames/issues"
+  },
+  "homepage": "https://github.com/itzcookiie/PhaserGames#readme",
+  "dependencies": {
+    "http-server": "^0.12.3",
+    "phaser": "^3.54.0"
+  }
+}
