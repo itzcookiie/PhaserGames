@@ -17,11 +17,23 @@ function preload ()
 
 function create () {
     this.add.rectangle().setStrokeStyle(0);
-    const floor = this.add.rectangle(400, 600, 800, 600, 0x6666ff);
-    const character = this.add.rectangle(25, 275, 50, 50, 0xfff000);
+    this.floor = this.add.rectangle(400, 600, 800, 600, 0x6666ff);
+    this.character = this.add.rectangle(25, 275, 50, 50, 0xfff000);
+
+    this.obstacle = this.add.rectangle(700, 200, 25, 25, 0x873600);
 
     this.input.keyboard.on('keydown', (e) => {
-        console.log(e.key)
+        switch (e.key) {
+            case 'ArrowRight':
+                // moveRight();
+                this.character.x++;
+                break;
+            case 'ArrowLeft':
+                // moveLeft();
+                this.character.x--;
+                break;
+            case 'ArrowUp':
+                // moveUp();
+        }
     })
-
 }
