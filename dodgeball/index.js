@@ -19,6 +19,8 @@ const colours = {
     lightning: [245, 250, 255]
 }
 
+let balls = [];
+
 function preload ()
 {
     this.load.image('danger', './exclamation-point-removebg.png')
@@ -49,7 +51,8 @@ function create() {
     this.ballSpawner = this.time.addEvent({
         delay: 500,
         loop: true,
-        callback: createBallShape.bind(this)
+        callbackScope: this,
+        callback: createBallShape
     })
 }
 
@@ -57,7 +60,17 @@ function update() {
     const formattedTime = this.time.now.toFixed(3) / 1000;
     this.timeText.setText(formattedTime);
 
-
+    balls.forEach((data, index, array) => {
+        if(!data.onMap && data.physics.x >= 0 && data.physics.x <= 800 && data.physics.y >= 0 && data.physics.y <= 600 ) {
+            data.onMap = true;
+        }
+        if(data.onMap && (data.physics.x < 0 || data.physics.x > 800 || data.physics.y < 0 || data.physics.y > 600)) {
+            data.physics.destroy();
+            array.splice(index, 1);
+        } else {
+            this.physics.accelerateToObject(data.physics, data.player, data.speed)
+        }
+    })
 }
 
 function createBallShape() {
@@ -98,28 +111,23 @@ function createBallShape() {
     else if(radius < midRadius) {
         colourRange.startColour = colours.lightning;
         colourRange.endColour = colours.orange;
-        colourRange.min = minRadius;
-        colourRange.max = midRadius;
     } else {
         colourRange.startColour = colours.orange;
         colourRange.endColour = colours.red;
-        colourRange.min = midRadius;
-        colourRange.max = maxRadius;
     }
 
-    const percentageDiffRadius = (radius - colourRange.min) / (colourRange.max - colourRange.min);
-    let hexColour;
+    const percentageDiffRadius = (radius - minRadius) / (maxRadius - minRadius);
 
+    let hexColour;
     if(colourRange.singleColour) {
         hexColour = RGBToHex(...colourRange.singleColour);
     } else {
         const newRGBColour = colourRange.startColour.map((rgbValue, i) => {
             const maxRGBValue = colourRange.endColour[i];
             const RGBDiff = maxRGBValue - rgbValue;
-            const percentageDiffRGB = RGBDiff * percentageDiffRadius;
+            const percentageDiffRGB = RGBDiff / 2;
             return Math.floor(rgbValue + percentageDiffRGB);
         });
-
         hexColour = RGBToHex(...newRGBColour);
     }
 
@@ -131,31 +139,42 @@ function createBallShape() {
         console.log('Game over')
     })
 
-    const scope = this;
-
     if(percentageDiffRadius < 0.15) {
         // Make danger icon spawn and be visible on map
-        console.log('spawned')
-        const height = 100;
-        let x = randomX;
-        let y = randomY;
-        if(randomX > widthRange) {
-            x = widthRange - 100;
+        let x = this.circle.x;
+        let y = this.circle.y;
+        let dangerIcon = this.add.image(x, y, 'danger').setScale(0.2);
+        const { displayHeight , displayWidth  } = dangerIcon;
+        if(x > widthRange - displayWidth) {
+            x = widthRange - displayWidth;
+        } else if(x < displayWidth) {
+            x = displayWidth
         }
-        if(randomY > heightRange) {
-            y = heightRange - 100;
+
+        if(y > heightRange - displayHeight) {
+            y = heightRange - displayHeight;
+        } else if(y < displayHeight) {
+            y = displayHeight
         }
-        const dangerIcon = this.add.image(x, y, 'danger').setScale(0.2);
+
+        dangerIcon.setDisplayOrigin(x, y);
         this.ballSpawner = this.time.addEvent({
             delay: 1000,
-            callbackScope: scope,
-            callback: function() {
+            callbackScope: this,
+            callback: function(ball) {
                 dangerIcon.destroy();
                 this.physics.accelerateToObject(this.ballPhysics, this.player, speed);
-            }
+            },
+            loop: false
         })
     } else {
-        this.physics.accelerateToObject(this.ballPhysics, this.player, speed);
+        balls.push({
+            onMap: false,
+            offMap: false,
+            physics: this.ballPhysics,
+            player: this.player,
+            speed
+        })
     }
 
 }
@@ -176,4 +195,8 @@ function RGBToHex(r,g,b) {
 
 
     return "0x" + r + g + b;
+}
+
+function createColourRange(startColour, endColour, min, max) {
+
 }
