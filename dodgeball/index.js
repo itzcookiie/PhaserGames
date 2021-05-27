@@ -24,10 +24,14 @@ let balls = [];
 function preload ()
 {
     this.load.image('danger', './exclamation-point-removebg.png')
+    this.load.audio('danger', './warning.mp3')
 }
 
 function create() {
     this.cameras.main.setBackgroundColor('rgba(255, 200, 0, 0.5)');
+    this.warningSound = this.sound.add('danger', {
+        volume: 0.1,
+    })
 
     this.playerRect = this.add.rectangle(50, 50, 25, 25, 0x873600);
     this.player = this.physics.add.existing(this.playerRect);
@@ -61,10 +65,10 @@ function update() {
     this.timeText.setText(formattedTime);
 
     balls.forEach((data, index, array) => {
-        if(!data.onMap && data.physics.x >= 0 && data.physics.x <= 800 && data.physics.y >= 0 && data.physics.y <= 600 ) {
+        if(!data.onMap && data.physics.x >= data.radius && data.physics.x <= 800 - data.radius && data.physics.y >= data.radius && data.physics.y <= 600 - data.radius ) {
             data.onMap = true;
         }
-        if(data.onMap && (data.physics.x < 0 || data.physics.x > 800 || data.physics.y < 0 || data.physics.y > 600)) {
+        if(data.onMap && (data.physics.x <= -data.radius || data.physics.x >= 800 + data.radius || data.physics.y <= -data.radius || data.physics.y >= 600 + data.radius)) {
             data.physics.destroy();
             array.splice(index, 1);
         } else {
@@ -158,6 +162,7 @@ function createBallShape() {
         }
 
         dangerIcon.setDisplayOrigin(x, y);
+        this.warningSound.play()
         this.ballSpawner = this.time.addEvent({
             delay: 1000,
             callbackScope: this,
@@ -173,7 +178,8 @@ function createBallShape() {
             offMap: false,
             physics: this.ballPhysics,
             player: this.player,
-            speed
+            speed,
+            radius
         })
     }
 
